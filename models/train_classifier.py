@@ -1,4 +1,8 @@
+# import required packages
 import sys
+import numpy as np
+import pandas as pd
+from sqlalchemy import create_engine
 
 
 def load_data(database_filepath):
