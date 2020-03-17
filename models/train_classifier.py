@@ -11,11 +11,12 @@ from sklearn.model_selection import train_test_split
 def load_data(database_filepath):
     engine = create_engine('sqlite:///database_filepath')
     df = pd.read_sql("SELECT *  FROM InsertTableName", engine)
-    X = df.iloc[:, 2]
+    X_raw = df.iloc[:, 2]
     y = df.iloc[:,4:]
     category_names = y.columns
     
-    return X, y, category_names
+    X_tokenized = tokenize(X)
+    return X_tokenized, y, category_names
 
 
 def tokenize(text):
