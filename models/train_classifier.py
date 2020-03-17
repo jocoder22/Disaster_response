@@ -13,14 +13,17 @@ def load_data(database_filepath):
     df = pd.read_sql("SELECT *  FROM InsertTableName", engine)
     X = df.iloc[:, 2]
     y = df.iloc[:,4:]
+    category_names = y.columns
     
-    return X, y
+    return X, y, category_names
 
 
 def tokenize(text):
+    text2 = text.map(lambda x: x.lower())
+    
     cvect = CountVectorizer(stop_words='english')
     
-    xcount = cvect.fit_transform(text)
+    xcount = cvect.fit_transform(text2)
     
     df = pd.DataFrame(xcount, columns=cvect.get_feature_names())
     
