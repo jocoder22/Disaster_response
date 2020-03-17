@@ -8,7 +8,7 @@ from sqlalchemy import create_engine
 def load_data(database_filepath):
     engine = create_engine('sqlite:///database_filepath')
     df = pd.read_sql("SELECT *  FROM InsertTableName", engine)
-    X = df.iloc[:,:4]
+    X = df.iloc[:, 2]
     y = df.iloc[:,4:]
     
     return X, y
