@@ -1,31 +1,115 @@
 import sys
+import numpy as np
+import pandas as pd 
+from sqlalchemy import create_engine
+
+
 
 
 def load_data(messages_filepath, categories_filepath):
-    pass
+    """The load_data function load the csv file into pandas dataframe
+ 
+    Args: 
+        messages_filepath (filepath): the filepath for the messages
+        categories_filepath (filepath): the filepath for the categories data
+
+ 
+ 
+    Returns: 
+        DataFrame: The DataFrame for analysis
+ 
+    """
+    
+    # load the messages csv
+    mess = pd.read_csv(messages_filepath)
+
+    # load the categories csv
+    catt = pd.read_csv(categories_filepath)
+    
+    # merge the datasets
+    data = mess.merge(catt, on="id")
+
+    return data
 
 
-def clean_data(df):
-    pass
+def clean_data(dataset):
+    """The clean_data function will return a clean DataFrame after removing, replacing and
+        and cleaning the DataFrame to  a suitable form for further saving to database for analysis
+ 
+    Args: 
+        dataset (DataFrame): the DataFrame for data wrangling 
+ 
+    Returns: 
+        DataFrame: The DataFrame for saving to database and later analysis
+ 
+    """
+    # Split the values in the categories column on the ; character so that each value becomes a separate column
+    categories = dataset.categories.str.split(";", expand=True)
+
+
+    # Use the first row of categories dataframe to create column names for the categories data.
+    row = categories.iloc[0]
+    category_colnames = row.apply(lambda x: x[:-2])
+
+    # Rename columns of categories with new column names.
+    # category_colnames = row.str.extract(r'([\w]+)', expand=False)
+    categories.columns = category_colnames
+
+    # extract only the digits in categories columns
+    for column in categories:
+        # set each value to be the last character of the string
+        # categories[column] = categories[column].str.extract(r'(\d+)', expand=False).astype(int) 
+        categories[column] = categories[column].str[-1:]
+        
+        # convert column from string to numeric
+        categories[column] = categories[column].astype(int)
+
+    # drop the original categories column from dataset
+    dataset.drop(columns=["categories"], inplace=True)
+
+    # concatenate the original dataframe with the new `categories` dataframe
+    df_ = pd.concat([dataset, categories], axis=1)
+
+
+    # drop duplicates
+    df_.drop_duplicates(keep = "first", inplace=True)
+
+
+    return df_
+
+
 
 
 def save_data(df, database_filename):
-    pass  
+    """The save_data function save the dataframe to sql database
+ 
+    Args: 
+        df (DataFrame): the DataFrame to save to sql
+        database_filename (filepath): filepath of the sql database
+
+ 
+    """
+ 
+    # crate engine
+    engine = create_engine('sqlite:///database_filename')
+
+    # save to database
+    df.to_sql('InsertTableName', engine, index=False, if_exists='replace')
 
 
 def main():
     if len(sys.argv) == 4:
-
+        print(" ")
         messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
 
         print('Loading data...\n    MESSAGES: {}\n    CATEGORIES: {}'
-              .format(messages_filepath, categories_filepath))
+              .format(messages_filepath, categories_filepath), end="\n\n")
         df = load_data(messages_filepath, categories_filepath)
 
-        print('Cleaning data...')
+        print('Cleaning data...\n\n')
         df = clean_data(df)
         
-        print('Saving data...\n    DATABASE: {}'.format(database_filepath))
+        print('Saving data...\n    DATABASE: {}'.format(database_filepath), '\n\n')
         save_data(df, database_filepath)
         
         print('Cleaned data saved to database!')

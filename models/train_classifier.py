@@ -7,6 +7,9 @@ from sqlalchemy import create_engine
 from sklearn.feature_extraction.text import CountVectorizer, TfidVectorizer
 from sklearn.model_selection import train_test_split
 
+from sklearn.naive_bayes import MultinomialNB
+from sklearn import metrics
+
 
 def load_data(database_filepath):
     engine = create_engine('sqlite:///database_filepath')
@@ -18,6 +21,19 @@ def load_data(database_filepath):
     X_tokenized = tokenize(X)
     return X_tokenized, y, category_names
 
+def load_data(database_filepath):
+    """The load_data function 
+ 
+    Args: 
+        database_filepath (filepath): the sql database filepath
+ 
+ 
+    Returns: 
+        DataFrame: The DataFrame for analysis
+ 
+    """
+ 
+    
 
 def tokenize(text):
     text2 = text.map(lambda x: x.lower())
