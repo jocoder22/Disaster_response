@@ -4,6 +4,9 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
 
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+
 
 def load_data(database_filepath):
     engine = create_engine('sqlite:///database_filepath')
@@ -15,7 +18,13 @@ def load_data(database_filepath):
 
 
 def tokenize(text):
-    pass
+    cvect = CountVectorizer(stop_words='english')
+    
+    xcount = cvect.fit_transform(text)
+    
+    df = pd.DataFrame(xcount, columns=cvect.get_feature_names())
+    
+    return df
 
 
 def build_model():
