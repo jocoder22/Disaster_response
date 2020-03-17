@@ -6,7 +6,12 @@ from sqlalchemy import create_engine
 
 
 def load_data(database_filepath):
-    pass
+    engine = create_engine('sqlite:///database_filepath')
+    df = pd.read_sql("SELECT *  FROM InsertTableName", engine)
+    X = df.iloc[:,:4]
+    y = df.iloc[:,4:]
+    
+    return X, y
 
 
 def tokenize(text):
