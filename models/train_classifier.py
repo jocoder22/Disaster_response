@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from sqlalchemy import create_engine
 
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidVectorizer
 from sklearn.model_selection import train_test_split
 
 
@@ -21,7 +21,9 @@ def load_data(database_filepath):
 def tokenize(text):
     text2 = text.map(lambda x: x.lower())
     
-    cvect = CountVectorizer(stop_words='english')
+#     cvect = CountVectorizer(stop_words='english')
+    
+    cvect = TfidVectorizer(stop_words='english', max_df=0.86)
     
     xcount = cvect.fit_transform(text2)
     
