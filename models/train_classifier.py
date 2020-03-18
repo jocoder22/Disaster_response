@@ -3,33 +3,50 @@ import sys
 import numpy as np
 import pandas as pd
 import pickle
-from sqlalchemy import create_engine
 
-from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import make_pipeline, Pipeline
-
-from sklearn.linear_model import LogisticRegression  
-from sklearn.multiclass import OneVsRestClassifier 
-from sklearn.ensemble import RandomForestClassifier
-
-
-from sklearn.naive_bayes import MultinomialNB
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    accuracy_score,
+    confusion_matrix,
+    classification_report,
+    multilabel_confusion_matrix,
+)
 from sklearn import metrics
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, multilabel_confusion_matrix
-from sklearn.metrics import hamming_loss
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.multioutput import MultiOutputClassifier
+
+from sqlalchemy import create_engine
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
+from sklearn.model_selection import train_test_split, GridSearchCV
+
+from sklearn.feature_extraction.text import (
+    CountVectorizer,
+    TfidfTransformer,
+)
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+
+import nltk
+
+# from nltk import ConfusionMatrix
+from nltk.metrics import ConfusionMatrix
+
+nltk.download(["punkt", "wordnet"])
 
 
 def load_data(database_filepath):
-    """The load_data function
+    """The load_data function loads the dataset 
+       from sql database.
 
     Args:
         database_filepath (filepath): the sql database filepath
 
 
     Returns:
-        DataFrame: The DataFrame for analysis
         X_tokenized (DataFrame): dataframe with text message column
         y (DataFrame):  dataframe with target classes
         category_names(list): list containing the name of the categories
@@ -39,19 +56,16 @@ def load_data(database_filepath):
     engine = create_engine(f"sqlite:///{database_filepath}", echo=False)
 
     # read all data in sql table
-    df =  pd.read_sql_query("SELECT  *  FROM  disasterTable", engine)
+    df = pd.read_sql_query("SELECT  *  FROM  disasterTable", engine)
 
     # Select text and target
-    X_raw = df.iloc[:, 1]
-    y = df.iloc[:, 4:]
+    messages_ = df.iloc[:, 1].values
+    categories_ = df.iloc[:, 4:].values
 
     # get categories names
-    category_names = y.columns
+    category_names = df.iloc[:, 4:].columns
 
-    # tokenize text
-    # X_tokenized = tokenize(X_raw)
-
-    return X_raw, y, category_names
+    return messages_, categories_, category_names
 
 
 def tokenize(text):
@@ -59,28 +73,23 @@ def tokenize(text):
         to use for model training and testing
 
     Args:
-        text (DataFrame): the DataFrame with text column for tokenization
+        text (text message): the text message for tokenization
 
 
     Returns:
-        DataFrame: The DataFrame with words tokens and values for modelling
+        token_cleaned (list): list with words tokens for modelling
 
     """
-    # normalize the text to all lower case
-    text2 = text.apply(lambda x: x.lower())
-
-    #  cvect = CountVectorizer(stop_words='english')
-
-    # create a TfidfVectorizer
-    cvect = TfidfVectorizer(stop_words="english", max_df=0.86)
-
-    # Fit and transform text
-    xcount = cvect.fit_transform(text2)
-
-    # Create pandas DataFrame
-    df = pd.DataFrame(xcount.A, columns=cvect.get_feature_names())
-
-    return df
+    tokens = word_tokenize(text)
+    lemmy = WordNetLemmatizer()
+    
+    token_cleaned = []
+    
+    for token in tokens:
+        token_ = lemmy.lemmatize(token).lower().strip()
+        token_cleaned.append(token_)
+        
+    return token_cleaned
 
 
 def build_model():
@@ -93,27 +102,30 @@ def build_model():
 
     """
     # create pipeline
-    pipe = Pipeline([
-        ("scaler", StandardScaler()),
-        ("naiveclass", MultinomialNB())
-    ])
+    pipe = Pipeline(
+        [("scaler", StandardScaler()), ("naiveclass", MultinomialNB())]
+    )
 
-    pipe2 = Pipeline([
-        ("scaler", StandardScaler()),
-        ("classifier", OneVsRestClassifier(LogisticRegression()))
-    ])
+    pipe2 = Pipeline(
+        [
+            ("scaler", StandardScaler()),
+            ("classifier", OneVsRestClassifier(LogisticRegression())),
+        ]
+    )
 
     # pl = Pipeline([
     #     ('vec', CountVectorizer()),
     #     ('clf', OneVsRestClassifier(LogisticRegression()))
     # ])
-    pl = Pipeline([
-        ('vec', CountVectorizer()),
-        ("forestClass", RandomForestClassifier())
-    ])
+    pl = Pipeline(
+        [
+            ("vec", CountVectorizer()),
+            ("forestClass", RandomForestClassifier()),
+        ]
+    )
 
     model1 = OneVsRestClassifier(LogisticRegression())
-    
+
     return pl
 
     # return pipe2
@@ -136,23 +148,21 @@ def evaluate_model(model, X_text, Y_test, category_name):
     # predict using the model
     # pred = model.predict(X_text)
 
-
     # calculate the accuracy score
     # a_score = hamming_loss(Y_test, pred)
-    # a_score = metrics.accuracy_score(Y_test, pred, normalize=True, sample_weight=None)
-   
+    # a_score = metrics.accuracy_score(Y_test, pred, normalize=True,
+    #                       sample_weight=None)
+
     # a_score = model.score(X_text, Y_test)
 
     # cm = multilabel_confusion_matrix(y_test, ypred)
     # calculate the confusion matrix
-    # conf_mat = multilabel_confusion_matrix(Y_test, pred, labels=category_name)
+    # conf_mat = multilabel_confusion_matrix(Y_test, pred,
+    #                               labels=category_name)
     # print(f"Confusion Matrix:\n{conf_mat}\n")
-
 
     # print(f"Model Accuracy: { (1-a_score)*100:.02f}%\n\n")
     print("pass... evaluation")
-
-    
 
 
 def save_model(model, model_filepath):
@@ -171,7 +181,7 @@ def save_model(model, model_filepath):
 
     # # Save the model
 
-    pickle.dump(model, open(model_filepath, 'wb'))
+    pickle.dump(model, open(model_filepath, "wb"))
 
     print("Done saving model!")
 
@@ -206,7 +216,8 @@ def main():
             "Please provide the filepath of the disaster messages database "
             "as the first argument and the filepath of the pickle file to "
             "save the model to as the second argument. \n\nExample: python "
-            "train_classifier.py ../data/DisasterResponse.db classifier.pkl")
+            "train_classifier.py ../data/DisasterResponse.db classifier.pkl"
+        )
 
 
 if __name__ == "__main__":
