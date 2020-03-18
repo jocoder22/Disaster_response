@@ -79,24 +79,24 @@ def clean_data(dataset):
     return df_
 
 
-def save_data(df, database_filename):
+def save_data(dtss, database_filepath):
     """The save_data function save the dataframe to sql database
 
     Args:
-        df (DataFrame): the DataFrame to save to sql
-        database_filename (filepath): filepath of the sql database
+        dtss (DataFrame): the DataFrame to save to sql
+        database_filepath (filepath): filepath of the sql database
 
 
     Returns: None
 
     """
 
-    # crate engine
-    engine = create_engine("sqlite:///database_filename")
+    # crate engine 
+    engine = create_engine(f"sqlite:///{database_filepath}", echo=False)
 
     # save to database
-    df.to_sql(
-        "InsertTableName",
+    dtss.to_sql(
+        "disasterTable",
         engine,
         index=False,
         if_exists="replace")

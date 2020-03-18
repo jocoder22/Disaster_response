@@ -2,10 +2,13 @@
 import sys
 import numpy as np
 import pandas as pd
+import pickle
 from sqlalchemy import create_engine
 
-from sklearn.feature_extraction.text import CountVectorizer, TfidVectorizer
-from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline, Pipeline
 
 from sklearn.naive_bayes import MultinomialNB
 from sklearn import metrics
@@ -29,18 +32,19 @@ def load_data(database_filepath):
     engine = create_engine("sqlite:///database_filepath")
 
     # read all data in sql table
-    df = pd.read_sql("SELECT *  FROM InsertTableName", engine)
+    df =  pd.read_sql_query("SELECT  *  FROM InsertTableName", engine)
 
     # Select text and target
     X_raw = df.iloc[:, 2]
     y = df.iloc[:, 4:]
+
+    # get categories names
     category_names = y.columns
 
     # tokenize text
     X_tokenized = tokenize(X)
 
     return X_tokenized, y, category_names
-
 
 
 def tokenize(text):
@@ -60,8 +64,8 @@ def tokenize(text):
 
     #  cvect = CountVectorizer(stop_words='english')
 
-    # create a TdifVectorizer
-    cvect = TfidVectorizer(stop_words="english", max_df=0.86)
+    # create a TfidfVectorizer
+    cvect = TfidfVectorizer(stop_words="english", max_df=0.86)
 
     # Fit and transform text
     xcount = cvect.fit_transform(text2)
@@ -72,26 +76,71 @@ def tokenize(text):
     return df
 
 
-
 def build_model():
     """The build_model function build a model pipeline
- 
+
     Args: None
- 
-    Returns: 
+
+    Returns:
         model(pipeline): model pipeline for fitting, prediction and scoring
- 
+
     """
-    pass
-    
+    # create pipeline
+    pipe = Pipeline([
+        ("scaler", StandardScaler()),
+        ("naiveclass", MultinomialNB())
+    ])
+
+    return pipe
 
 
-def evaluate_model(model, X_test, Y_test, category_names):
-    pass
+def evaluate_model(model, X_text, Y_test, category_name):
+    """The evaluate_model function scores the performance of trained model
+        on test (unseen) text and categories
+
+    Args:
+        model (model): model to evaluate
+        X_text (numpy arrays): the test (unseen) tokenized text
+        Y_test (numpy arrays): the test (unseen) target used for evaluation
+        category_names(list): list containing the name of the categories
+
+    Returns: None
+            print out the accuracy and confusion metrics
+
+    """
+    # predict using the model
+    pred = model.predict(X_text)
+
+    # calculate the accuracy score
+    a_score = metrics.accuracy(Y_test, pred)
+
+    # calculate the confusion matrix
+    conf_mat = metrics.confusion_matrix(Y_test, pred, labels=category_name)
+
+    print(f"Model Accuracy: {a_score*100:.02f}%\n\n")
+
+    print(f"Confusion Matrix:\n{conf_mat}\n")
 
 
 def save_model(model, model_filepath):
-    pass
+    """The save_model function save the model
+
+    Args:
+        model (model): the model to save
+        model_filepath (filepath): filepath where to save the modeld
+
+
+
+    Returns: None
+            print out: Done saving model!
+
+    """
+
+    # # Save the model
+
+    pkl.dump(model2, open(filename, 'wb'))
+
+    print("Done saving model!")
 
 
 def main():
