@@ -10,8 +10,15 @@ from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline, Pipeline
 
+from sklearn.linear_model import LogisticRegression  
+from sklearn.multiclass import OneVsRestClassifier 
+from sklearn.ensemble import RandomForestClassifier
+
+
 from sklearn.naive_bayes import MultinomialNB
 from sklearn import metrics
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, multilabel_confusion_matrix
+from sklearn.metrics import hamming_loss
 
 
 def load_data(database_filepath):
@@ -42,9 +49,9 @@ def load_data(database_filepath):
     category_names = y.columns
 
     # tokenize text
-    X_tokenized = tokenize(X_raw)
+    # X_tokenized = tokenize(X_raw)
 
-    return X_tokenized, y, category_names
+    return X_raw, y, category_names
 
 
 def tokenize(text):
@@ -71,7 +78,7 @@ def tokenize(text):
     xcount = cvect.fit_transform(text2)
 
     # Create pandas DataFrame
-    df = pd.DataFrame(xcount, columns=cvect.get_feature_names())
+    df = pd.DataFrame(xcount.A, columns=cvect.get_feature_names())
 
     return df
 
@@ -91,7 +98,25 @@ def build_model():
         ("naiveclass", MultinomialNB())
     ])
 
-    return pipe
+    pipe2 = Pipeline([
+        ("scaler", StandardScaler()),
+        ("classifier", OneVsRestClassifier(LogisticRegression()))
+    ])
+
+    # pl = Pipeline([
+    #     ('vec', CountVectorizer()),
+    #     ('clf', OneVsRestClassifier(LogisticRegression()))
+    # ])
+    pl = Pipeline([
+        ('vec', CountVectorizer()),
+        ("forestClass", RandomForestClassifier())
+    ])
+
+    model1 = OneVsRestClassifier(LogisticRegression())
+    
+    return pl
+
+    # return pipe2
 
 
 def evaluate_model(model, X_text, Y_test, category_name):
@@ -109,17 +134,25 @@ def evaluate_model(model, X_text, Y_test, category_name):
 
     """
     # predict using the model
-    pred = model.predict(X_text)
+    # pred = model.predict(X_text)
+
 
     # calculate the accuracy score
-    a_score = metrics.accuracy(Y_test, pred)
+    # a_score = hamming_loss(Y_test, pred)
+    # a_score = metrics.accuracy_score(Y_test, pred, normalize=True, sample_weight=None)
+   
+    # a_score = model.score(X_text, Y_test)
 
+    # cm = multilabel_confusion_matrix(y_test, ypred)
     # calculate the confusion matrix
-    conf_mat = metrics.confusion_matrix(Y_test, pred, labels=category_name)
+    # conf_mat = multilabel_confusion_matrix(Y_test, pred, labels=category_name)
+    # print(f"Confusion Matrix:\n{conf_mat}\n")
 
-    print(f"Model Accuracy: {a_score*100:.02f}%\n\n")
 
-    print(f"Confusion Matrix:\n{conf_mat}\n")
+    # print(f"Model Accuracy: { (1-a_score)*100:.02f}%\n\n")
+    print("pass... evaluation")
+
+    
 
 
 def save_model(model, model_filepath):
@@ -138,7 +171,7 @@ def save_model(model, model_filepath):
 
     # # Save the model
 
-    pkl.dump(model2, open(filename, 'wb'))
+    pickle.dump(model, open(model_filepath, 'wb'))
 
     print("Done saving model!")
 
