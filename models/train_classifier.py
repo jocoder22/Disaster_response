@@ -29,10 +29,10 @@ def load_data(database_filepath):
 
     """
     # create sql engine
-    engine = create_engine("sqlite:///database_filepath")
+    engine = create_engine(f"sqlite:///{database_filepath}", echo=False)
 
     # read all data in sql table
-    df =  pd.read_sql_query("SELECT  *  FROM InsertTableName", engine)
+    df =  pd.read_sql_query("SELECT  *  FROM  disasterTable", engine)
 
     # Select text and target
     X_raw = df.iloc[:, 2]
