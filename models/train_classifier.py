@@ -138,7 +138,7 @@ def save_model(model, model_filepath):
 
     # # Save the model
 
-    pkl.dump(model2, open(filename, 'wb'))
+    pickle.dump(model, open(model_filepath, 'wb'))
 
     print("Done saving model!")
 
