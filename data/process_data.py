@@ -1,31 +1,29 @@
 import sys
 import numpy as np
-import pandas as pd 
+import pandas as pd
 from sqlalchemy import create_engine
-
-
 
 
 def load_data(messages_filepath, categories_filepath):
     """The load_data function load the csv file into pandas dataframe
- 
-    Args: 
+
+    Args:
         messages_filepath (filepath): the filepath for the messages
         categories_filepath (filepath): the filepath for the categories data
 
- 
- 
-    Returns: 
+
+
+    Returns:
         DataFrame: The DataFrame for analysis
- 
+
     """
-    
+
     # load the messages csv
     mess = pd.read_csv(messages_filepath)
 
     # load the categories csv
     catt = pd.read_csv(categories_filepath)
-    
+
     # merge the datasets
     data = mess.merge(catt, on="id")
 
@@ -33,21 +31,23 @@ def load_data(messages_filepath, categories_filepath):
 
 
 def clean_data(dataset):
-    """The clean_data function will return a clean DataFrame after removing, replacing and
-        and cleaning the DataFrame to  a suitable form for further saving to database for analysis
- 
-    Args: 
-        dataset (DataFrame): the DataFrame for data wrangling 
- 
-    Returns: 
+    """The clean_data function will return a clean DataFrame after removing,
+        replacing and cleaning the DataFrame to  a suitable form for further
+        saving to database for analysis
+
+    Args:
+        dataset (DataFrame): the DataFrame for data wrangling
+
+    Returns:
         DataFrame: The DataFrame for saving to database and later analysis
- 
+
     """
-    # Split the values in the categories column on the ; character so that each value becomes a separate column
+    # Split the values in the categories column on the ; character so that
+    # each value becomes a separate column
     categories = dataset.categories.str.split(";", expand=True)
 
-
-    # Use the first row of categories dataframe to create column names for the categories data.
+    # Use the first row of categories dataframe to create column names for the
+    # categories data.
     row = categories.iloc[0]
     category_colnames = row.apply(lambda x: x[:-2])
 
@@ -58,70 +58,83 @@ def clean_data(dataset):
     # extract only the digits in categories columns
     for column in categories:
         # set each value to be the last character of the string
-        # categories[column] = categories[column].str.extract(r'(\d+)', expand=False).astype(int) 
+        # categories[column] = (
+        #     categories[column].str.extract(
+        #         r"(\d+)", expand=False).astype(int))
         categories[column] = categories[column].str[-1:]
-        
+
         # convert column from string to numeric
         categories[column] = categories[column].astype(int)
 
     # drop the original categories column from dataset
     dataset.drop(columns=["categories"], inplace=True)
 
-    # concatenate the original dataframe with the new `categories` dataframe
+    # concatenate the original dataframe with the new `categories`
+    # dataframe
     df_ = pd.concat([dataset, categories], axis=1)
 
-
     # drop duplicates
-    df_.drop_duplicates(keep = "first", inplace=True)
-
+    df_.drop_duplicates(keep="first", inplace=True)
 
     return df_
 
 
-
-
 def save_data(df, database_filename):
     """The save_data function save the dataframe to sql database
- 
-    Args: 
+
+    Args:
         df (DataFrame): the DataFrame to save to sql
         database_filename (filepath): filepath of the sql database
 
- 
+
+    Returns: None
+
     """
- 
+
     # crate engine
-    engine = create_engine('sqlite:///database_filename')
+    engine = create_engine("sqlite:///database_filename")
 
     # save to database
-    df.to_sql('InsertTableName', engine, index=False, if_exists='replace')
+    df.to_sql(
+        "InsertTableName",
+        engine,
+        index=False,
+        if_exists="replace")
 
 
 def main():
     if len(sys.argv) == 4:
         print(" ")
-        messages_filepath, categories_filepath, database_filepath = sys.argv[1:]
+        messages_filepath, categories_filepath, database_filepath = sys.argv[
+            1:
+        ]
 
-        print('Loading data...\n    MESSAGES: {}\n    CATEGORIES: {}'
-              .format(messages_filepath, categories_filepath), end="\n\n")
+        print(
+            "Loading data...\n    MESSAGES: {}\n    CATEGORIES: {}".format(
+                messages_filepath, categories_filepath
+            ),
+            end="\n\n",
+        )
         df = load_data(messages_filepath, categories_filepath)
 
-        print('Cleaning data...\n\n')
+        print("Cleaning data...\n\n")
         df = clean_data(df)
-        
-        print('Saving data...\n    DATABASE: {}'.format(database_filepath), '\n\n')
+
+        print("Saving data...\n    DATABASE: {}".format(
+            database_filepath), "\n\n", )
         save_data(df, database_filepath)
-        
-        print('Cleaned data saved to database!')
-    
+
+        print("Cleaned data saved to database!")
+
     else:
-        print('Please provide the filepaths of the messages and categories '\
-              'datasets as the first and second argument respectively, as '\
-              'well as the filepath of the database to save the cleaned data '\
-              'to as the third argument. \n\nExample: python process_data.py '\
-              'disaster_messages.csv disaster_categories.csv '\
-              'DisasterResponse.db')
+        print(
+            "Please provide the filepaths of the messages and categories "
+            "datasets as the first and second argument respectively, as "
+            "well as the filepath of the database to save the cleaned data "
+            "to as the third argument. \n\nExample: python process_data.py "
+            "disaster_messages.csv disaster_categories.csv "
+            "DisasterResponse.db")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
