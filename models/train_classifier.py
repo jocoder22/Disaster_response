@@ -35,14 +35,14 @@ def load_data(database_filepath):
     df =  pd.read_sql_query("SELECT  *  FROM  disasterTable", engine)
 
     # Select text and target
-    X_raw = df.iloc[:, 2]
+    X_raw = df.iloc[:, 1]
     y = df.iloc[:, 4:]
 
     # get categories names
     category_names = y.columns
 
     # tokenize text
-    X_tokenized = tokenize(X)
+    X_tokenized = tokenize(X_raw)
 
     return X_tokenized, y, category_names
 
@@ -60,7 +60,7 @@ def tokenize(text):
 
     """
     # normalize the text to all lower case
-    text2 = text.map(lambda x: x.lower())
+    text2 = text.apply(lambda x: x.lower())
 
     #  cvect = CountVectorizer(stop_words='english')
 
