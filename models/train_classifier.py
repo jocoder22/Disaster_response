@@ -42,16 +42,16 @@ def load_data(database_filepath):
     df =  pd.read_sql_query("SELECT  *  FROM  disasterTable", engine)
 
     # Select text and target
-    X_raw = df.iloc[:, 1]
-    y = df.iloc[:, 4:]
+    messages = df.iloc[:, 1].values
+    categories = df.iloc[:, 4:].values
 
     # get categories names
-    category_names = y.columns
+    category_names = df.iloc[:, 4:].columns
 
     # tokenize text
     # X_tokenized = tokenize(X_raw)
 
-    return X_raw, y, category_names
+    return messages, categories, category_names
 
 
 def tokenize(text):
