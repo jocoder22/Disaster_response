@@ -48,9 +48,6 @@ def load_data(database_filepath):
     # get categories names
     category_names = df.iloc[:, 4:].columns
 
-    # tokenize text
-    # X_tokenized = tokenize(X_raw)
-
     return messages, categories, category_names
 
 
@@ -59,28 +56,25 @@ def tokenize(text):
         to use for model training and testing
 
     Args:
-        text (DataFrame): the DataFrame with text column for tokenization
+        text (text): the text messagesfor tokenization
 
 
     Returns:
-        DataFrame: The DataFrame with words tokens and values for modelling
+        token_cleaned (list): a list with words tokens and values for modelling
 
     """
-    # normalize the text to all lower case
-    text2 = text.apply(lambda x: x.lower())
+    # create text tokens
+    tokens = word_tokenize(text)
+    lemmy = WordNetLemmatizer()
+    
+    token_cleaned = []
+    
+    for token in tokens:
+        token_ = lemmy.lemmatize(token).lower().strip()
+        token_cleaned.append(token_)
+        
+    return token_cleaned
 
-    #  cvect = CountVectorizer(stop_words='english')
-
-    # create a TfidfVectorizer
-    cvect = TfidfVectorizer(stop_words="english", max_df=0.86)
-
-    # Fit and transform text
-    xcount = cvect.fit_transform(text2)
-
-    # Create pandas DataFrame
-    df = pd.DataFrame(xcount.A, columns=cvect.get_feature_names())
-
-    return df
 
 
 def build_model():
