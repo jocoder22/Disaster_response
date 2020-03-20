@@ -38,6 +38,43 @@ from nltk.metrics import ConfusionMatrix
 nltk.download(["punkt", "wordnet"])
 
 
+ custom transformer
+class dummyTransformer(BaseEstimator, TransformerMixin):
+    """dummyTransformer class forms dummies from selected columns"""
+#     def __init__(self, prefix_separator="_", columnlist=['unrelated', 'genre']):
+        
+#         self.prefix_separator = prefix_separator
+#         self.columnlist = columnlist
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        
+        finaldata = pd.get_dummies(X)
+        
+        return finaldata
+
+    
+
+
+# custom transformer
+class colSelector(BaseEstimator, TransformerMixin):
+    """dummyTransformer class forms dummies from selected columns"""
+    def __init__(self, col=0):
+        
+        self.columnlist = col
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        
+        col_ = X[:, self.columnlist]
+        
+        return col_
+    
+    
 def load_data(database_filepath):
     """The load_data function loads the dataset 
        from sql database.
