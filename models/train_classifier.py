@@ -1,44 +1,35 @@
-# import required packages
-import sys
 import numpy as np
 import pandas as pd
-import pickle
-
-from sklearn.multiclass import OneVsRestClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (
-    accuracy_score,
-    confusion_matrix,
-    classification_report,
-    multilabel_confusion_matrix,
-)
-from sklearn import metrics
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.multioutput import MultiOutputClassifier
-
 from sqlalchemy import create_engine
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
-from sklearn.model_selection import train_test_split, GridSearchCV
-
-from sklearn.feature_extraction.text import (
-    CountVectorizer,
-    TfidfTransformer,
-)
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import MaxAbsScaler, StandardScaler, FunctionTransformer
+from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.model_selection import train_test_split, GridSearchCV, RandomizedSearchCV
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer, HashingVectorizer
+from sklearn.feature_selection import chi2, SelectKBest
+from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.preprocessing import PolynomialFeatures
 
 import nltk
-
 # from nltk import ConfusionMatrix
 from nltk.metrics import ConfusionMatrix
+nltk.download(['punkt','wordnet', 'averaged_perceptron_tagger'])
 
-nltk.download(["punkt", "wordnet"])
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.multiclass import OneVsRestClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression, SGDClassifier
+
+from sklearn.base import BaseEstimator, TransformerMixin
+import pickle
+import joblib
 
 
- custom transformer
+#  custom transformer
 class dummyTransformer(BaseEstimator, TransformerMixin):
     """dummyTransformer class forms dummies from selected columns"""
 #     def __init__(self, prefix_separator="_", columnlist=['unrelated', 'genre']):
