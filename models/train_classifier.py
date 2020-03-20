@@ -51,7 +51,7 @@ class dummyTransformer(BaseEstimator, TransformerMixin):
 
 # custom transformer
 class colSelector(BaseEstimator, TransformerMixin):
-    """dummyTransformer class forms dummies from selected columns"""
+    """colSelector for selecting columns"""
     def __init__(self, col=0):
         
         self.columnlist = col
@@ -84,14 +84,15 @@ def load_data(database_filepath):
     engine = create_engine(f"sqlite:///{database_filepath}", echo=False)
 
     # read all data in sql table
-    df = pd.read_sql_query("SELECT  *  FROM  disasterTable", engine)
+#     df = pd.read_sql_query("SELECT  *  FROM  disasterTable", engine)
+    df = pd.read_sql_table('disasterTable', engine)
 
     # Select text and target
     messages_ = df.iloc[:, 1].values
     categories_ = df.iloc[:, 4:].values
 
     # get categories names
-    category_names = df.iloc[:, 4:].columns
+    category_names = df.iloc[:, 4:].columns.tolist()
 
     return messages_, categories_, category_names
 
@@ -130,38 +131,26 @@ def build_model():
 
     """
     # create pipeline
-    pipe = Pipeline(
-        [("scaler", StandardScaler()), ("naiveclass", MultinomialNB())]
-    )
+    pl = Pipeline([
+        ("combineAll", FeatureUnion(
+                transformer_list = [
+                      ("textfeature" , Pipeline([
+                          ("selector", colSelector(col=0)),
+                          ('cvect', CountVectorizer(tokenizer=tokenize)),
+                          ('tfidt', TfidfTransformer()),
+                  ])),
+                    ("catfeature" , Pipeline([
+                        ("selector", colSelector(col=1)),
+                        ("dummy", dummyTransformer())
+                    ]))
+                ]
+            )),
 
-    pipe2 = Pipeline(
-        [
-            ("scaler", StandardScaler()),
-            ("classifier", OneVsRestClassifier(LogisticRegression())),
-        ]
-    )
+            ("mascaler", MaxAbsScaler()),
+            ('rforest', MultiOutputClassifier(RandomForestClassifier()))
+        ])
 
-    # pl = Pipeline([
-    #     ('vec', CountVectorizer()),
-    #     ('clf', OneVsRestClassifier(LogisticRegression()))
-    # ])
-    pl = Pipeline(
-        [
-            ("vec", CountVectorizer()),
-            ("forestClass", RandomForestClassifier()),
-        ]
-    )
-
-    model1 = OneVsRestClassifier(LogisticRegression())
-
-    pll = Pipeline([
-            ('cvect', CountVectorizer(tokenizer=tokenize)),
-            ('tfidt', TfidfTransformer()),
-            #     ('rforest', RandomForestClassifier()),
-            ('multi', MultiOutputClassifier(KNeighborsClassifier()))
-            ])
-
-    return pll
+    return pl
 
 
 
@@ -213,8 +202,8 @@ def save_model(model, model_filepath):
     """
 
     # # Save the model
-
-    pickle.dump(model, open(model_filepath, "wb"))
+    joblib.dump(model, f"{model_filepath}")
+#     pickle.dump(model, open(model_filepath, "wb"))
 
     print("Done saving model!")
 
