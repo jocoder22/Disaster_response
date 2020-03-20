@@ -82,13 +82,13 @@ def tokenize(text):
     """
     tokens = word_tokenize(text)
     lemmy = WordNetLemmatizer()
-    
+
     token_cleaned = []
-    
+
     for token in tokens:
         token_ = lemmy.lemmatize(token).lower().strip()
         token_cleaned.append(token_)
-        
+
     return token_cleaned
 
 
@@ -126,12 +126,18 @@ def build_model():
 
     model1 = OneVsRestClassifier(LogisticRegression())
 
-    return pl
+    pll = Pipeline([
+            ('cvect', CountVectorizer(tokenizer=tokenize)),
+            ('tfidt', TfidfTransformer()),
+            #     ('rforest', RandomForestClassifier()),
+            ('multi', MultiOutputClassifier(KNeighborsClassifier()))
+            ])
 
-    # return pipe2
+    return pll
 
 
-def evaluate_model(model, X_text, Y_test, category_name):
+
+def evaluate_model(model, X_test, Y_test, category_name):
     """The evaluate_model function scores the performance of trained model
         on test (unseen) text and categories
 
@@ -145,24 +151,23 @@ def evaluate_model(model, X_text, Y_test, category_name):
             print out the accuracy and confusion metrics
 
     """
+    sp = {"end": "\n\n", "sep": "\n\n"}
+
     # predict using the model
-    # pred = model.predict(X_text)
+    pred = model.predict(X_test)
 
-    # calculate the accuracy score
-    # a_score = hamming_loss(Y_test, pred)
-    # a_score = metrics.accuracy_score(Y_test, pred, normalize=True,
-    #                       sample_weight=None)
+    # Calculate accuracy
+    accuracy = (pred == Y_test).mean()
+    accuracyscore = model.score(X_test, Y_test)
 
-    # a_score = model.score(X_text, Y_test)
 
-    # cm = multilabel_confusion_matrix(y_test, ypred)
-    # calculate the confusion matrix
-    # conf_mat = multilabel_confusion_matrix(Y_test, pred,
-    #                               labels=category_name)
-    # print(f"Confusion Matrix:\n{conf_mat}\n")
+    for i, label in enumerate(category_name):
+        print("Printing for ", label)
+        print(classification_report(Y_test[i] , pred[i]), **sp)
 
-    # print(f"Model Accuracy: { (1-a_score)*100:.02f}%\n\n")
-    print("pass... evaluation")
+    print(f"Model Accuracy: {accuracy*100:.02f}%\n")
+    print(f"Model Accuracy: {accuracyscore*100:.02f}%\n")
+    
 
 
 def save_model(model, model_filepath):
