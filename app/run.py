@@ -41,12 +41,36 @@ def tokenize(text):
     return clean_tokens
 
 # load data
+<<<<<<< HEAD
 database_path = "data/DisasterResponse.db"
+=======
+<<<<<<< HEAD
+database_path = "D:/Disaster_response2/data/DisasterResponse.db"
+=======
+<<<<<<< HEAD
+database_path = "D:/Disaster_response2/data/DisasterResponse.db"
+=======
+database_path = "data/DisasterResponse.db"
+>>>>>>> a57d9af7c79664c0323f32f5fac3ae23c00606ba
+>>>>>>> eee255ada9eddf0cb8057930709b318d8a4d5262
+>>>>>>> fc5f29392dcef867646c760353a56392c7e8847e
 engine = create_engine(f"sqlite:///{database_path}", echo=False)
 df = pd.read_sql_table('disasterTable', engine)
 
 # load model
+<<<<<<< HEAD
 model_path = "models/classifier.pkl"
+=======
+<<<<<<< HEAD
+model_path = "D:/Disaster_response2/models/classifier.pkl"
+=======
+<<<<<<< HEAD
+model_path = "D:/Disaster_response2/models/classifier.pkl"
+=======
+model_path = "models/classifier.pkl"
+>>>>>>> a57d9af7c79664c0323f32f5fac3ae23c00606ba
+>>>>>>> eee255ada9eddf0cb8057930709b318d8a4d5262
+>>>>>>> fc5f29392dcef867646c760353a56392c7e8847e
 model = joblib.load(f"{model_path}", "r")
 
 
