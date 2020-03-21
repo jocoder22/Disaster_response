@@ -35,7 +35,7 @@ import nltk
 # from nltk import ConfusionMatrix
 from nltk.metrics import ConfusionMatrix
 
-nltk.download(["punkt", "wordnet"])
+# nltk.download(["punkt", "wordnet"])
 
 
 def load_data(database_filepath):
@@ -54,16 +54,33 @@ def load_data(database_filepath):
     """
     # create sql engine
     engine = create_engine(f"sqlite:///{database_filepath}", echo=False)
+    
 
     # read all data in sql table
     df = pd.read_sql_query("SELECT  *  FROM  disasterTable", engine)
 
+    # drop duplicates and original text message
+    df.drop_duplicates(subset = ["message"], keep="first", inplace=True)
+    df.drop(columns=["original"], inplace=True)
+
+    # create unrelated and  rowtotal
+    df.insert(2, "unrelated", df["related"].map(lambda x: x==0))
+    df.insert(3, "rowtotal" ,  df.iloc[:,3:].sum(axis=1))
+    df["rowtotalstr"] = df["rowtotal"].astype(str)
+
+    # change dtypes
+    df[["unrelated", "rowtotal"]] = df[["unrelated", "rowtotal"]].astype("category")
+
+    # drop nan, na
+    df.dropna(inplace=True)
+
     # Select text and target
-    messages_ = df.iloc[:, 1].values
-    categories_ = df.iloc[:, 4:].values
+    messages_ = df.iloc[:,1:5]
+    categories_ = df.iloc[:,5:]
+
 
     # get categories names
-    category_names = df.iloc[:, 4:].columns
+    category_names = df.iloc[:, 5:-1].columns
 
     return messages_, categories_, category_names
 
@@ -101,6 +118,13 @@ def build_model():
         model(pipeline): model pipeline for fitting, prediction and scoring
 
     """
+
+    # create function transformer
+    textfunction = FunctionTransformer(lambda x : x["message"], validate=False)
+    catfunction = FunctionTransformer(lambda x: x[["unrelated", "genre"]], validate=False)
+    numfunction = FunctionTransformer(lambda x: x["rowtotal"], validate=False)
+
+
     # create pipeline
     pipe = Pipeline(
         [("scaler", StandardScaler()), ("naiveclass", MultinomialNB())]
