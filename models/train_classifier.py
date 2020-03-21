@@ -3,48 +3,68 @@ import sys
 import numpy as np
 import pandas as pd
 import pickle
-
-from sklearn.multiclass import OneVsRestClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import (
-    accuracy_score,
-    confusion_matrix,
-    classification_report,
-    multilabel_confusion_matrix,
-)
-from sklearn import metrics
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.multioutput import MultiOutputClassifier
-
+import joblib
 from sqlalchemy import create_engine
-from nltk.tokenize import word_tokenize
-from nltk.stem import WordNetLemmatizer
-from sklearn.model_selection import train_test_split, GridSearchCV
 
-from sklearn.feature_extraction.text import (
-    CountVectorizer,
-    TfidfTransformer,
-)
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import MaxAbsScaler
+from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.base import BaseEstimator, TransformerMixin
 
 import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import WordNetLemmatizer
 
-# from nltk import ConfusionMatrix
-from nltk.metrics import ConfusionMatrix
 
+
+# custom transformer
+class dummyTransformer(BaseEstimator, TransformerMixin):
+    """dummyTransformer class forms dummies from selected columns"""
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        
+        finaldata = pd.get_dummies(X)
+        
+        return finaldata
+
+    
+
+<<<<<<< HEAD
 # nltk.download(["punkt", "wordnet"])
+=======
+
+# custom transformer
+class columnSelector(BaseEstimator, TransformerMixin):
+    """columnSelector class select columns"""
+    def __init__(self, col=0):
+        
+        self.columnlist = col
+
+    def fit(self, X, y=None):
+        return self
+
+    def transform(self, X):
+        
+        col_ = X[:, self.columnlist]
+        
+        return col_
+    
+>>>>>>> eee255ada9eddf0cb8057930709b318d8a4d5262
 
 
 def load_data(database_filepath):
-    """The load_data function loads the dataset 
-       from sql database.
+    """The load_data function
 
     Args:
         database_filepath (filepath): the sql database filepath
-
 
     Returns:
         X_tokenized (DataFrame): dataframe with text message column
@@ -57,7 +77,7 @@ def load_data(database_filepath):
     
 
     # read all data in sql table
-    df = pd.read_sql_query("SELECT  *  FROM  disasterTable", engine)
+    df =  pd.read_sql_table('disasterTable', engine)
 
     # drop duplicates and original text message
     df.drop_duplicates(subset = ["message"], keep="first", inplace=True)
@@ -75,12 +95,21 @@ def load_data(database_filepath):
     df.dropna(inplace=True)
 
     # Select text and target
+<<<<<<< HEAD
     messages_ = df.iloc[:,1:5]
     categories_ = df.iloc[:,5:]
 
 
     # get categories names
     category_names = df.iloc[:, 5:-1].columns
+=======
+    messages_ = df.iloc[:, :2].values
+    categories_ = df.iloc[:, 2:].values
+    name = df.iloc[:, 2:]
+
+    # get categories names
+    category_names = name.columns.tolist()
+>>>>>>> eee255ada9eddf0cb8057930709b318d8a4d5262
 
     return messages_, categories_, category_names
 
@@ -90,23 +119,33 @@ def tokenize(text):
         to use for model training and testing
 
     Args:
-        text (text message): the text message for tokenization
+        text (DataFrame): the DataFrame with text column for tokenization
 
 
     Returns:
-        token_cleaned (list): list with words tokens for modelling
+        DataFrame: The DataFrame with words tokens and values for modelling
 
     """
+
     tokens = word_tokenize(text)
     lemmy = WordNetLemmatizer()
 
+    stopword = set(stopwords.words("english"))
+    
+    # Retain alphabetic words: alpha_only
+    alpha_only = [t.lower() for t in tokens if t.isalpha()]
+
+    # Remove all stop words: no_stops
+    no_stop_tokens = [t for t in alpha_only if t not in stopword]
+
     token_cleaned = []
 
-    for token in tokens:
+    for token in no_stop_tokens:
         token_ = lemmy.lemmatize(token).lower().strip()
         token_cleaned.append(token_)
 
     return token_cleaned
+
 
 
 def build_model():
@@ -126,42 +165,30 @@ def build_model():
 
 
     # create pipeline
-    pipe = Pipeline(
-        [("scaler", StandardScaler()), ("naiveclass", MultinomialNB())]
-    )
+    plu = Pipeline([
+    ("combineAll", FeatureUnion(
+            transformer_list = [
+                  ("textfeature" , Pipeline([
+                      ("selector", columnSelector(col=0)),
+                      ('cvect', CountVectorizer(tokenizer=tokenize,
+                             max_df=0.86, ngram_range=(1,2))),
+                      ('tfidt', TfidfTransformer()),
+              ])),
+                ("catfeature" , Pipeline([
+                    ("selector", columnSelector(col=1)),
+                    ("dummy", dummyTransformer())
+                ]))
+            ]
+        )),
+   
+        ("mascaler", MaxAbsScaler()),
+        ('rforest', MultiOutputClassifier(RandomForestClassifier()))
+    ])
 
-    pipe2 = Pipeline(
-        [
-            ("scaler", StandardScaler()),
-            ("classifier", OneVsRestClassifier(LogisticRegression())),
-        ]
-    )
-
-    # pl = Pipeline([
-    #     ('vec', CountVectorizer()),
-    #     ('clf', OneVsRestClassifier(LogisticRegression()))
-    # ])
-    pl = Pipeline(
-        [
-            ("vec", CountVectorizer()),
-            ("forestClass", RandomForestClassifier()),
-        ]
-    )
-
-    model1 = OneVsRestClassifier(LogisticRegression())
-
-    pll = Pipeline([
-            ('cvect', CountVectorizer(tokenizer=tokenize)),
-            ('tfidt', TfidfTransformer()),
-            #     ('rforest', RandomForestClassifier()),
-            ('multi', MultiOutputClassifier(KNeighborsClassifier()))
-            ])
-
-    return pll
+    return plu
 
 
-
-def evaluate_model(model, X_test, Y_test, category_name):
+def evaluate_model(model, X_text, Y_test, category_names):
     """The evaluate_model function scores the performance of trained model
         on test (unseen) text and categories
 
@@ -178,20 +205,21 @@ def evaluate_model(model, X_test, Y_test, category_name):
     sp = {"end": "\n\n", "sep": "\n\n"}
 
     # predict using the model
-    pred = model.predict(X_test)
+    pred = model.predict(X_text)
 
     # Calculate accuracy
     accuracy = (pred == Y_test).mean()
-    accuracyscore = model.score(X_test, Y_test)
+    accuracyscore = model.score(X_text, Y_test)
+    
+    
+    print(f"Model Accuracy: {accuracy*100:.02f}%\n")
+    print(f"Model Accuracy: {accuracyscore*100:.02f}%\n")
 
 
-    for i, label in enumerate(category_name):
+    for i, label in enumerate(category_names):
         print("Printing for ", label)
         print(classification_report(Y_test[i] , pred[i]), **sp)
 
-    print(f"Model Accuracy: {accuracy*100:.02f}%\n")
-    print(f"Model Accuracy: {accuracyscore*100:.02f}%\n")
-    
 
 
 def save_model(model, model_filepath):
@@ -201,16 +229,12 @@ def save_model(model, model_filepath):
         model (model): the model to save
         model_filepath (filepath): filepath where to save the modeld
 
-
-
     Returns: None
             print out: Done saving model!
 
     """
-
     # # Save the model
-
-    pickle.dump(model, open(model_filepath, "wb"))
+    joblib.dump(model, f"{model_filepath}")
 
     print("Done saving model!")
 
@@ -245,8 +269,7 @@ def main():
             "Please provide the filepath of the disaster messages database "
             "as the first argument and the filepath of the pickle file to "
             "save the model to as the second argument. \n\nExample: python "
-            "train_classifier.py ../data/DisasterResponse.db classifier.pkl"
-        )
+            "train_classifier.py ../data/DisasterResponse.db classifier.pkl")
 
 
 if __name__ == "__main__":
