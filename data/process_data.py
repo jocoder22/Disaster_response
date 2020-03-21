@@ -52,15 +52,11 @@ def clean_data(dataset):
     category_colnames = row.apply(lambda x: x[:-2])
 
     # Rename columns of categories with new column names.
-    # category_colnames = row.str.extract(r'([\w]+)', expand=False)
     cat.columns = category_colnames
 
     # extract only the digits in categories columns
     for column in cat:
         # set each value to be the last character of the string
-        # categories[column] = (
-        #     categories[column].str.extract(
-        #         r"(\d+)", expand=False).astype(int))
         cat[column] = cat[column].str[-1:]
 
         # convert column from string to numeric
@@ -73,10 +69,8 @@ def clean_data(dataset):
     # dataframe
     df_ = pd.concat([dataset, cat], axis=1)
 
-    # drop duplicates
+    # drop duplicates and columns not essential for further analysis
     df_.drop_duplicates(keep="first", inplace=True)
-
-    # drop columns not needed
     df_.drop(columns=["id", "original"], inplace=True)
 
     return df_
@@ -93,8 +87,7 @@ def save_data(dtss, database_filepath):
     Returns: None
 
     """
-
-    # crate engine
+    # create engine 
     engine = create_engine(f"sqlite:///{database_filepath}", echo=False)
 
     # save to database

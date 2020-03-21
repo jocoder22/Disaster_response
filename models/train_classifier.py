@@ -75,7 +75,8 @@ def load_data(database_filepath):
     df =  pd.read_sql_table('disasterTable', engine)
 
     # Select text and target
-    messages_ = df.iloc[:, :2].values
+    # messages_ = df.iloc[:, :2].values
+    messages_ = df.iloc[:, 0].values
     categories_ = df.iloc[:, 2:].values
     name = df.iloc[:, 2:]
 
@@ -112,6 +113,7 @@ def tokenize(text):
     token_cleaned = []
 
     for token in no_stop_tokens:
+    # for token in tokens:
         token_ = lemmy.lemmatize(token).lower().strip()
         token_cleaned.append(token_)
 
@@ -130,24 +132,32 @@ def build_model():
     """
     # create pipeline
     plu = Pipeline([
-    ("combineAll", FeatureUnion(
-            transformer_list = [
-                  ("textfeature" , Pipeline([
-                      ("selector", columnSelector(col=0)),
-                      ('cvect', CountVectorizer(tokenizer=tokenize,
-                             max_df=0.86, ngram_range=(1,2))),
+                    ('cvect', CountVectorizer(tokenizer=tokenize,
+                                 max_df=0.86, ngram_range=(1,2))),
                       ('tfidt', TfidfTransformer()),
-              ])),
-                ("catfeature" , Pipeline([
-                    ("selector", columnSelector(col=1)),
-                    ("dummy", dummyTransformer())
-                ]))
-            ]
-        )),
+                     ("mascaler", MaxAbsScaler()),
+                     ('rforest', MultiOutputClassifier(RandomForestClassifier()))
+            ])
+
+    # plu = Pipeline([
+    # ("combineAll", FeatureUnion(
+    #         transformer_list = [
+    #               ("textfeature" , Pipeline([
+    #                   ("selector", columnSelector(col=0)),
+    #                   ('cvect', CountVectorizer(tokenizer=tokenize,
+    #                          max_df=0.86, ngram_range=(1,2))),
+    #                   ('tfidt', TfidfTransformer()),
+    #           ])),
+    #             ("catfeature" , Pipeline([
+    #                 ("selector", columnSelector(col=1)),
+    #                 ("dummy", dummyTransformer())
+    #             ]))
+    #         ]
+    #     )),
    
-        ("mascaler", MaxAbsScaler()),
-        ('rforest', MultiOutputClassifier(RandomForestClassifier()))
-    ])
+    #     ("mascaler", MaxAbsScaler()),
+    #     ('rforest', MultiOutputClassifier(RandomForestClassifier()))
+    # ])
 
     return plu
 

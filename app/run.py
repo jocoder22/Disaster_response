@@ -14,21 +14,18 @@ from plotly.graph_objs import Bar
 # from sklearn.externals import joblib
 from sqlalchemy import create_engine
 
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.preprocessing import MaxAbsScaler, StandardScaler
+from sklearn.preprocessing import MaxAbsScaler
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-from sklearn.pipeline import Pipeline, FeatureUnion
+from sklearn.pipeline import Pipeline
 
 
 
 sys.path.insert(1, 'D:\Disaster_response2\models')
 sys.path.insert(2, 'D:\Disaster_response2\app')
-from train_classifier2 import columnSelector, dummyTransformer
+from train_classifier2 import tokenize
 
-path_master = "D:\Disaster_response2\app\templates\master.html"
-path_go = "D:\Disaster_response2\app\templates\go.html"
 
 app = Flask(__name__)
 
@@ -44,20 +41,12 @@ def tokenize(text):
     return clean_tokens
 
 # load data
-<<<<<<< HEAD
-database_path = "D:/Disaster_response2/data/DisasterResponse.db"
-=======
 database_path = "data/DisasterResponse.db"
->>>>>>> a57d9af7c79664c0323f32f5fac3ae23c00606ba
 engine = create_engine(f"sqlite:///{database_path}", echo=False)
 df = pd.read_sql_table('disasterTable', engine)
 
 # load model
-<<<<<<< HEAD
-model_path = "D:/Disaster_response2/models/classifier.pkl"
-=======
 model_path = "models/classifier.pkl"
->>>>>>> a57d9af7c79664c0323f32f5fac3ae23c00606ba
 model = joblib.load(f"{model_path}", "r")
 
 
