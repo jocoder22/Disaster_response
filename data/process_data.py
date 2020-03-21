@@ -44,37 +44,40 @@ def clean_data(dataset):
     """
     # Split the values in the categories column on the ; character so that
     # each value becomes a separate column
-    categories = dataset.categories.str.split(";", expand=True)
+    cat = dataset.categories.str.split(";", expand=True)
 
     # Use the first row of categories dataframe to create column names for the
     # categories data.
-    row = categories.iloc[0]
+    row = cat.iloc[0]
     category_colnames = row.apply(lambda x: x[:-2])
 
     # Rename columns of categories with new column names.
     # category_colnames = row.str.extract(r'([\w]+)', expand=False)
-    categories.columns = category_colnames
+    cat.columns = category_colnames
 
     # extract only the digits in categories columns
-    for column in categories:
+    for column in cat:
         # set each value to be the last character of the string
         # categories[column] = (
         #     categories[column].str.extract(
         #         r"(\d+)", expand=False).astype(int))
-        categories[column] = categories[column].str[-1:]
+        cat[column] = cat[column].str[-1:]
 
         # convert column from string to numeric
-        categories[column] = categories[column].astype(int)
+        cat[column] = cat[column].astype(int)
 
     # drop the original categories column from dataset
     dataset.drop(columns=["categories"], inplace=True)
 
     # concatenate the original dataframe with the new `categories`
     # dataframe
-    df_ = pd.concat([dataset, categories], axis=1)
+    df_ = pd.concat([dataset, cat], axis=1)
 
     # drop duplicates
     df_.drop_duplicates(keep="first", inplace=True)
+    
+    # drop columns not needed
+    df_.drop(columns=["id", "original"], inplace=True)
 
     return df_
 
