@@ -1,6 +1,9 @@
+import sys
 import json
 import plotly
 import pandas as pd
+import pickle
+import joblib
 
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
@@ -8,9 +11,24 @@ from nltk.tokenize import word_tokenize
 from flask import Flask
 from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar
-from sklearn.externals import joblib
+# from sklearn.externals import joblib
 from sqlalchemy import create_engine
 
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.preprocessing import MaxAbsScaler, StandardScaler
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.pipeline import Pipeline, FeatureUnion
+
+
+
+sys.path.insert(1, 'D:\Disaster_response2\models')
+sys.path.insert(2, 'D:\Disaster_response2\app')
+from train_classifier2 import columnSelector, dummyTransformer
+
+path_master = "D:\Disaster_response2\app\templates\master.html"
+path_go = "D:\Disaster_response2\app\templates\go.html"
 
 app = Flask(__name__)
 
@@ -26,11 +44,13 @@ def tokenize(text):
     return clean_tokens
 
 # load data
-engine = create_engine('sqlite:///../data/YourDatabaseName.db')
-df = pd.read_sql_table('YourTableName', engine)
+database_path = "D:/Disaster_response2/data/DisasterResponse.db"
+engine = create_engine(f"sqlite:///{database_path}", echo=False)
+df = pd.read_sql_table('disasterTable', engine)
 
 # load model
-model = joblib.load("../models/your_model_name.pkl")
+model_path = "D:/Disaster_response2/models/classifier.pkl"
+model = joblib.load(f"{model_path}", "r")
 
 
 # index webpage displays cool visuals and receives user input text for model
@@ -71,6 +91,7 @@ def index():
     graphJSON = json.dumps(graphs, cls=plotly.utils.PlotlyJSONEncoder)
     
     # render web page with plotly graphs
+    # return render_template(path_master, ids=ids, graphJSON=graphJSON)
     return render_template('master.html', ids=ids, graphJSON=graphJSON)
 
 
@@ -93,7 +114,8 @@ def go():
 
 
 def main():
-    app.run(host='0.0.0.0', port=3001, debug=True)
+    # app.run(host='0.0.0.0', port=3001, debug=True)
+    app.run(host='127.0.0.1', port=8080, debug=True)
 
 
 if __name__ == '__main__':
