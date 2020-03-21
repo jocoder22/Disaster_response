@@ -75,7 +75,7 @@ def clean_data(dataset):
 
     # drop duplicates
     df_.drop_duplicates(keep="first", inplace=True)
-    
+
     # drop columns not needed
     df_.drop(columns=["id", "original"], inplace=True)
 
@@ -94,7 +94,7 @@ def save_data(dtss, database_filepath):
 
     """
 
-    # crate engine 
+    # crate engine
     engine = create_engine(f"sqlite:///{database_filepath}", echo=False)
 
     # save to database
