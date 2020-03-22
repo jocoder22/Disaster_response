@@ -52,27 +52,27 @@ def clean_data(dataset):
     category_colnames = row.apply(lambda x: x[:-2])
 
     # Rename columns of categories with new column names.
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
+<< << << < HEAD
+== == == =
+<< << << < HEAD
+== == == =
     # category_colnames = row.str.extract(r'([\w]+)', expand=False)
->>>>>>> eee255ada9eddf0cb8057930709b318d8a4d5262
->>>>>>> fc5f29392dcef867646c760353a56392c7e8847e
+>>>>>> > eee255ada9eddf0cb8057930709b318d8a4d5262
+>>>>>> > fc5f29392dcef867646c760353a56392c7e8847e
     cat.columns = category_colnames
 
     # extract only the digits in categories columns
     for column in cat:
         # set each value to be the last character of the string
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
+<< << << < HEAD
+== == == =
+<< << << < HEAD
+== == == =
         # categories[column] = (
         #     categories[column].str.extract(
         #         r"(\d+)", expand=False).astype(int))
->>>>>>> eee255ada9eddf0cb8057930709b318d8a4d5262
->>>>>>> fc5f29392dcef867646c760353a56392c7e8847e
+>>>>>> > eee255ada9eddf0cb8057930709b318d8a4d5262
+>>>>>> > fc5f29392dcef867646c760353a56392c7e8847e
         cat[column] = cat[column].str[-1:]
 
         # convert column from string to numeric
