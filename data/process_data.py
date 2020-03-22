@@ -50,29 +50,11 @@ def clean_data(dataset):
     # categories data.
     row = cat.iloc[0]
     category_colnames = row.apply(lambda x: x[:-2])
-
-    # Rename columns of categories with new column names.
-<< << << < HEAD
-== == == =
-<< << << < HEAD
-== == == =
-    # category_colnames = row.str.extract(r'([\w]+)', expand=False)
->>>>>> > eee255ada9eddf0cb8057930709b318d8a4d5262
->>>>>> > fc5f29392dcef867646c760353a56392c7e8847e
     cat.columns = category_colnames
 
     # extract only the digits in categories columns
     for column in cat:
         # set each value to be the last character of the string
-<< << << < HEAD
-== == == =
-<< << << < HEAD
-== == == =
-        # categories[column] = (
-        #     categories[column].str.extract(
-        #         r"(\d+)", expand=False).astype(int))
->>>>>> > eee255ada9eddf0cb8057930709b318d8a4d5262
->>>>>> > fc5f29392dcef867646c760353a56392c7e8847e
         cat[column] = cat[column].str[-1:]
 
         # convert column from string to numeric
@@ -87,12 +69,8 @@ def clean_data(dataset):
 
     # drop duplicates and columns not essential for further analysis
     df_.drop_duplicates(keep="first", inplace=True)
-<<<<<<< HEAD
-=======
-    df_.drop(columns=["id", "original"], inplace=True)
 
     # drop columns not needed
->>>>>>> fc5f29392dcef867646c760353a56392c7e8847e
     df_.drop(columns=["id", "original"], inplace=True)
 
     return df_

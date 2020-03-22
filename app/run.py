@@ -1,3 +1,4 @@
+import os
 import sys
 import json
 import plotly
@@ -31,6 +32,9 @@ import plotly
 
 from data_wrangle2 import data_ww
 
+sys.path.insert(0, "D:\Disaster_response")
+
+mydir = r"D:\Disaster_response"
 
 app = Flask(__name__)
 
@@ -48,14 +52,16 @@ def tokenize(text):
 
 
 # load data
-database_path = r"D:\Disaster_response\data\disasterResponse.db"
+database_path = os.path.join(mydir, "data\disasterResponse.db")
+print(database_path)
+D:\Disaster_response\data\disasterResponse.db
 
 engine = create_engine(f"sqlite:///{database_path}", echo=False)
 df = pd.read_sql_table("disasterTable", engine)
 
 # load model
-model_path = "models/classifier.pkl"
 
+model_path = os.path.join(mydir, "models/classifier.pkl")
 model = joblib.load(f"{model_path}", "r")
 
 
