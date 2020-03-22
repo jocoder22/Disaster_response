@@ -62,7 +62,7 @@ def data_ww(ggg):
     colindex = [gg.columns.tolist()] *len(gg2.index)
 
     groupbar = []
-    cmm = ['rgb(0, 102, 153)', 'rgb(0, 51, 202)', 'rgb(0, 0, 153)']
+   
     # create plotly object for group bar
     for indx, name in enumerate(gg.index.tolist()):
         groupbar.append(go.Bar(

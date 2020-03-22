@@ -30,11 +30,11 @@ import plotly.graph_objects as go
 import plotly
 
 
-from data_wrangle2 import data_ww
+sys.path.insert(0, "D:/Disaster_response/app")
+sys.path.insert(1, "D:/Disaster_response/models")
+mydir = r"D:\Disaster_response"
 
-# sys.path.insert(0, "D:/Disaster_response/app")
-# sys.path.insert(1, "D:/Disaster_response/models")
-# mydir = r"D:\Disaster_response"
+from data_wrangle2 import data_ww
 
 
 app = Flask(__name__)
@@ -50,7 +50,6 @@ def tokenize(text):
         clean_tokens.append(clean_tok)
 
     return clean_tokens
-
 
 
 path = 'D:\Disaster_response\data'
@@ -76,11 +75,12 @@ model = joblib.load(f"{model_path}", "r")
 def index():
 
     # extract data needed for visuals
-    figures = data_ww(df)
+    fig = data_ww(df)
+
 
     # encode plotly graphs in JSON
-    ids = ["graph-{}".format(i) for i, _ in enumerate(figures)]
-    graphJSON = json.dumps(figures, cls=plotly.utils.PlotlyJSONEncoder)
+    ids = ["graph-{}".format(i) for i, _ in enumerate(fig)]
+    graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
     # render web page with plotly graphs
     return render_template("master.html", ids=ids, graphJSON=graphJSON)
