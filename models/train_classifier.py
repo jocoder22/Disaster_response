@@ -77,40 +77,19 @@ def load_data(database_filepath):
 
     # drop duplicates and original text message
     df.drop_duplicates(subset = ["message"], keep="first", inplace=True)
-    df.drop(columns=["original"], inplace=True)
-
-    # create unrelated and  rowtotal
-    df.insert(2, "unrelated", df["related"].map(lambda x: x==0))
-    df.insert(3, "rowtotal" ,  df.iloc[:,3:].sum(axis=1))
-    df["rowtotalstr"] = df["rowtotal"].astype(str)
-
-    # change dtypes
-    df[["unrelated", "rowtotal"]] = df[["unrelated", "rowtotal"]].astype("category")
 
     # drop nan, na
     df.dropna(inplace=True)
 
     # Select text and target
-<<<<<<< HEAD
-    # messages_ = df.iloc[:, :2].values
     messages_ = df.iloc[:, 0].values
-=======
-<<<<<<< HEAD
-    messages_ = df.iloc[:,1:5]
-    categories_ = df.iloc[:,5:]
-
 
     # get categories names
-    category_names = df.iloc[:, 5:-1].columns
-=======
-    messages_ = df.iloc[:, :2].values
->>>>>>> fc5f29392dcef867646c760353a56392c7e8847e
     categories_ = df.iloc[:, 2:].values
     name = df.iloc[:, 2:]
 
     # get categories names
     category_names = name.columns.tolist()
->>>>>>> eee255ada9eddf0cb8057930709b318d8a4d5262
 
     return messages_, categories_, category_names
 
@@ -159,13 +138,6 @@ def build_model():
         model(pipeline): model pipeline for fitting, prediction and scoring
 
     """
-
-    # create function transformer
-    textfunction = FunctionTransformer(lambda x : x["message"], validate=False)
-    catfunction = FunctionTransformer(lambda x: x[["unrelated", "genre"]], validate=False)
-    numfunction = FunctionTransformer(lambda x: x["rowtotal"], validate=False)
-
-
     # create pipeline
     plu = Pipeline([
                     ('cvect', CountVectorizer(tokenizer=tokenize,
@@ -175,25 +147,6 @@ def build_model():
                      ('rforest', MultiOutputClassifier(RandomForestClassifier()))
             ])
 
-    # plu = Pipeline([
-    # ("combineAll", FeatureUnion(
-    #         transformer_list = [
-    #               ("textfeature" , Pipeline([
-    #                   ("selector", columnSelector(col=0)),
-    #                   ('cvect', CountVectorizer(tokenizer=tokenize,
-    #                          max_df=0.86, ngram_range=(1,2))),
-    #                   ('tfidt', TfidfTransformer()),
-    #           ])),
-    #             ("catfeature" , Pipeline([
-    #                 ("selector", columnSelector(col=1)),
-    #                 ("dummy", dummyTransformer())
-    #             ]))
-    #         ]
-    #     )),
-   
-    #     ("mascaler", MaxAbsScaler()),
-    #     ('rforest', MultiOutputClassifier(RandomForestClassifier()))
-    # ])
 
     return plu
 
