@@ -50,7 +50,11 @@ def data_ww(ggg):
 
     # calculate the percentages for  message categories
     categories_ = ggg.iloc[:, 2:]
-    allcat = categories_.sum() / categories_.shape[0] * 100 > 10
+    allcat = (
+        categories_.sum() /
+        categories_.shape[0] *
+        100).sort_values(
+        ascending=False) > 10
     topten = allcat[allcat].index.tolist()
 
     # calculate the percentages of genre for seven top message categories
