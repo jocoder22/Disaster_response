@@ -29,12 +29,11 @@ from sklearn.pipeline import Pipeline
 import plotly.graph_objects as go
 import plotly
 
+from data_wrangle2 import data_ww
 
 sys.path.insert(0, "D:/Disaster_response/app")
 sys.path.insert(1, "D:/Disaster_response/models")
 mydir = r"D:\Disaster_response"
-
-from data_wrangle2 import data_ww
 
 
 app = Flask(__name__)
@@ -52,11 +51,11 @@ def tokenize(text):
     return clean_tokens
 
 
-path = 'D:\Disaster_response\data'
+path = r"D:\Disaster_response\data"
 os.chdir(path)
 
 # Create engine: engine
-engine = create_engine('sqlite:///disasterResponse.db', echo=False)
+engine = create_engine("sqlite:///disasterResponse.db", echo=False)
 
 
 # load data
@@ -76,7 +75,6 @@ def index():
 
     # extract data needed for visuals
     fig = data_ww(df)
-
 
     # encode plotly graphs in JSON
     ids = ["graph-{}".format(i) for i, _ in enumerate(fig)]
