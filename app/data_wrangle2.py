@@ -91,8 +91,8 @@ def data_ww(ggg):
 
     figures = []
 
-    figures.append(dict(data=groupbar, layout=groupbarlayout))
-    figures.append(dict(data=bar2, layout=barlayout2))
     figures.append(dict(data=bar1, layout=barlayout1))
+    figures.append(dict(data=bar2, layout=barlayout2))
+    figures.append(dict(data=groupbar, layout=groupbarlayout))
 
     return figures
