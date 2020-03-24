@@ -4,14 +4,14 @@ import plotly
 
 def data_ww(ggg):
     """The data_ww function will form graph objects for visualization
- 
-    Args: 
-        ggg (ggg): the DataFrame for visualization
- 
 
-    Returns: 
+    Args:
+        ggg (ggg): the DataFrame for visualization
+
+
+    Returns:
         figures: plotly figure objects for visualization
- 
+
     """
     # calcutae the counts of genre
     genre_counts = ggg.groupby("genre").count()["message"]
@@ -51,7 +51,7 @@ def data_ww(ggg):
     # calculate the percentages for  message categories
     categories_ = ggg.iloc[:, 2:]
     allcat = categories_.sum() / categories_.shape[0] * 100 > 10
-    topten = allcat[allcat == True].index.tolist()
+    topten = allcat[allcat].index.tolist()
 
     # calculate the percentages of genre for seven top message categories
     gg = ggg.groupby("genre")[topten].sum()
