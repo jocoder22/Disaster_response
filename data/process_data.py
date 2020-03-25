@@ -87,23 +87,21 @@ def save_data(dtss, database_filepath):
     Returns: None
 
     """
-    # create engine 
+    # create engine
     engine = create_engine(f"sqlite:///{database_filepath}", echo=False)
 
     # save to database
-    dtss.to_sql(
-        "disasterTable",
-        engine,
-        index=False,
-        if_exists="replace")
+    dtss.to_sql("disasterTable", engine, index=False, if_exists="replace")
 
 
 def main():
     if len(sys.argv) == 4:
         print(" ")
-        messages_filepath, categories_filepath, database_filepath = sys.argv[
-            1:
-        ]
+        (
+            messages_filepath,
+            categories_filepath,
+            database_filepath,
+        ) = sys.argv[1:]
 
         print(
             "Loading data...\n    MESSAGES: {}\n    CATEGORIES: {}".format(
@@ -116,8 +114,10 @@ def main():
         print("Cleaning data...\n\n")
         df = clean_data(df)
 
-        print("Saving data...\n    DATABASE: {}".format(
-            database_filepath), "\n\n", )
+        print(
+            "Saving data...\n    DATABASE: {}".format(database_filepath),
+            "\n\n",
+        )
         save_data(df, database_filepath)
 
         print("Cleaned data saved to database!")
@@ -129,7 +129,8 @@ def main():
             "well as the filepath of the database to save the cleaned data "
             "to as the third argument. \n\nExample: python process_data.py "
             "disaster_messages.csv disaster_categories.csv "
-            "DisasterResponse.db")
+            "DisasterResponse.db"
+        )
 
 
 if __name__ == "__main__":

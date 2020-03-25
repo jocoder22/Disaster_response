@@ -46,21 +46,23 @@ def data_ww(ggg):
     barlayout2 = dict(
         title="Distribution of Message Categories",
         yaxis=dict(title="Percent"),
-        xaxis=dict(tickangle=45, title_standoff = 205, automargin=True, title="Categories"), 
+        xaxis=dict(
+            tickangle=45,
+            title_standoff=205,
+            automargin=True,
+            title="Categories",
+        ),
         # ,automargin=True ,title="Categories" yaxis
         # xaxis=dict(title="Percent"),
-        # yaxis=dict(title_standoff = 205, automargin=True,title="Categories") 
-
+        # yaxis=dict(title_standoff = 205, automargin=True,title="Categories")
         #
     )
 
     # calculate the percentages for  message categories
     categories_ = ggg.iloc[:, 2:]
-    allcat = (
-        categories_.sum() /
-        categories_.shape[0] *
-        100).sort_values(
-        ascending=False) > 10
+    allcat = (categories_.sum() / categories_.shape[0] * 100).sort_values(
+        ascending=False
+    ) > 10
     topten = allcat[allcat].index.tolist()
 
     # calculate the percentages of genre for seven top message categories
@@ -81,8 +83,8 @@ def data_ww(ggg):
                 y=[round(y * 100, 2) for y in valuelist[indx]],
                 name=name,
                 type="bar",
-                # text=[str(round(y * 100, 2)) for y in valuelist[indx]], 
-                text = [f'{round(y * 100, 1)}%' for y in valuelist[indx]],
+                # text=[str(round(y * 100, 2)) for y in valuelist[indx]],
+                text=[f"{round(y * 100, 1)}%" for y in valuelist[indx]],
                 textposition="auto",
                 hoverinfo="none",
                 # opacity=0.5,
@@ -97,8 +99,11 @@ def data_ww(ggg):
         barmode="group",
         title="Percentage Distribution of High Message Category by Genre",
         xaxis=dict(title="Categories"),
-        yaxis=dict(showgrid=False, visible=False) # title="Percent", visible=False, ,showticklabels=False
-        # xaxis=dict(title="Categories"),  showticklabels=False, ticks=" ", ticktext = " " ,
+        yaxis=dict(
+            showgrid=False, visible=False
+        )  # title="Percent", visible=False, ,showticklabels=False
+        # xaxis=dict(title="Categories"),  showticklabels=False, ticks=" ",
+        # ticktext = " " ,
     )
 
     figures = []
