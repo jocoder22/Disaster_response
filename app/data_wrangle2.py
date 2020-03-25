@@ -38,6 +38,7 @@ def data_ww(ggg):
     bar2.append(
         go.Bar(
             x=catseries.index.tolist(),
+            # orientation='h',
             y=[round(b, 2) for b in catseries.values.tolist()],
         )
     )
@@ -45,7 +46,12 @@ def data_ww(ggg):
     barlayout2 = dict(
         title="Distribution of Message Categories",
         yaxis=dict(title="Percent"),
-        xaxis=dict(tickangle=45, title_standoff = 205, automargin=True,title="Categories") # ,automargin=True ,title="Categories"
+        xaxis=dict(tickangle=45, title_standoff = 205, automargin=True, title="Categories"), 
+        # ,automargin=True ,title="Categories" yaxis
+        # xaxis=dict(title="Percent"),
+        # yaxis=dict(title_standoff = 205, automargin=True,title="Categories") 
+
+        #
     )
 
     # calculate the percentages for  message categories
@@ -91,8 +97,8 @@ def data_ww(ggg):
         barmode="group",
         title="Percentage Distribution of High Message Category by Genre",
         xaxis=dict(title="Categories"),
-        yaxis=dict(showticklabels=False, ticks=" ", ticktext = " " ,showgrid=False, visible=False) # title="Percent", visible=False, ,showticklabels=False
-        # xaxis=dict(title="Categories"),
+        yaxis=dict(showgrid=False, visible=False) # title="Percent", visible=False, ,showticklabels=False
+        # xaxis=dict(title="Categories"),  showticklabels=False, ticks=" ", ticktext = " " ,
     )
 
     figures = []
