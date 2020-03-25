@@ -75,7 +75,8 @@ def data_ww(ggg):
                 y=[round(y * 100, 2) for y in valuelist[indx]],
                 name=name,
                 type="bar",
-                text=[str(round(y * 100, 2)) for y in valuelist[indx]],
+                # text=[str(round(y * 100, 2)) for y in valuelist[indx]], 
+                text = [f'{round(y * 100, 1)}%' for y in valuelist[indx]],
                 textposition="auto",
                 hoverinfo="none",
                 # opacity=0.5,
@@ -88,8 +89,8 @@ def data_ww(ggg):
     # create the group bar layout
     groupbarlayout = dict(
         barmode="group",
-        title="Distribution of High Message Category by Genre",
-        yaxis=dict(title="Percent"),
+        title="Percentage Distribution of High Message Category by Genre",
+        yaxis=dict(ticks=" ", ticktext = " " ),# title="Percent",
         xaxis=dict(title="Categories"),
     )
 
