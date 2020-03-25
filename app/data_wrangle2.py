@@ -45,7 +45,7 @@ def data_ww(ggg):
     barlayout2 = dict(
         title="Distribution of Message Categories",
         yaxis=dict(title="Percent"),
-        xaxis=dict(tickangle=45, title_standoff = 465), #
+        xaxis=dict(tickangle=45, title_standoff = 195, automargin=True,title="Categories") # ,automargin=True ,title="Categories"
     )
 
     # calculate the percentages for  message categories
