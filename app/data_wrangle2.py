@@ -90,8 +90,9 @@ def data_ww(ggg):
     groupbarlayout = dict(
         barmode="group",
         title="Percentage Distribution of High Message Category by Genre",
-        yaxis=dict(showticklabels=False, ticks=" ", ticktext = " " ,showgrid=False, visible=False),# title="Percent", visible=False, ,showticklabels=False
         xaxis=dict(title="Categories"),
+        yaxis=dict(showticklabels=False, ticks=" ", ticktext = " " ,showgrid=False, visible=False) # title="Percent", visible=False, ,showticklabels=False
+        # xaxis=dict(title="Categories"),
     )
 
     figures = []
