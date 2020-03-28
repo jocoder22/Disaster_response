@@ -9,6 +9,7 @@ import joblib
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
+from nltk.stem.snowball import SnowballStemmer
 
 from flask import Flask
 from flask import render_template, request, jsonify
@@ -43,6 +44,7 @@ app = Flask(__name__)
 def tokenize(text):
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
+    wordporter = SnowballStemmer("english")
 
     stopword = set(stopwords.words("english"))
     
@@ -50,7 +52,9 @@ def tokenize(text):
     alpha_only = [t.lower() for t in tokens if t.isalpha()]
 
     # Remove all stop words: no_stops
-    no_stop_tokens = [t for t in alpha_only if t not in stopword]
+    _tokens = [t for t in alpha_only if t not in stopword]
+
+    no_stop_tokens = [wordporter.stem(word) for word in _tokens]
 
     clean_tokens = []
 

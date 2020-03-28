@@ -15,10 +15,10 @@ from sklearn.metrics import classification_report
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.base import BaseEstimator, TransformerMixin
 
-import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import WordNetLemmatizer
+from nltk.stem.snowball import SnowballStemmer
 
 
 
@@ -107,8 +107,11 @@ def tokenize(text):
 
     """
 
+    
+def tokenize(text):
     tokens = word_tokenize(text)
-    lemmy = WordNetLemmatizer()
+    lemmatizer = WordNetLemmatizer()
+    wordporter = SnowballStemmer("english")
 
     stopword = set(stopwords.words("english"))
     
@@ -116,16 +119,18 @@ def tokenize(text):
     alpha_only = [t.lower() for t in tokens if t.isalpha()]
 
     # Remove all stop words: no_stops
-    no_stop_tokens = [t for t in alpha_only if t not in stopword]
+    _tokens = [t for t in alpha_only if t not in stopword]
 
-    token_cleaned = []
+    no_stop_tokens = [wordporter.stem(word) for word in _tokens]
 
-    for token in no_stop_tokens:
-    # for token in tokens:
-        token_ = lemmy.lemmatize(token).lower().strip()
-        token_cleaned.append(token_)
+    clean_tokens = []
 
-    return token_cleaned
+    # for tok in tokens:
+    for tok in no_stop_tokens:
+        clean_tok = lemmatizer.lemmatize(tok).lower().strip()
+        clean_tokens.append(clean_tok)
+
+    return clean_tokens
 
 
 
