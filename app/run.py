@@ -8,6 +8,7 @@ import joblib
 
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
 
 from flask import Flask
 from flask import render_template, request, jsonify
@@ -43,8 +44,18 @@ def tokenize(text):
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
 
+    stopword = set(stopwords.words("english"))
+    
+    # Retain alphabetic words: alpha_only
+    alpha_only = [t.lower() for t in tokens if t.isalpha()]
+
+    # Remove all stop words: no_stops
+    no_stop_tokens = [t for t in alpha_only if t not in stopword]
+
     clean_tokens = []
-    for tok in tokens:
+
+    # for tok in tokens:
+    for tok in no_stop_tokens:
         clean_tok = lemmatizer.lemmatize(tok).lower().strip()
         clean_tokens.append(clean_tok)
 
