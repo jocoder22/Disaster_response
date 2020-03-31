@@ -55,6 +55,24 @@ class columnSelector(BaseEstimator, TransformerMixin):
         return col_
     
 
+def tcolumn(dataframe, col, dtype):
+    """The tcolumn function changes the dtype of dataframe column(s)
+ 
+    Args: 
+        dataframe (DataFrame): the DataFrame for data_wrangling
+        col (list): list for features to select from the DataFrame
+        dtype (str): dtype to change to
+ 
+ 
+    Returns: 
+        dataframe (DataFrame): The DataFrame for analysis
+ 
+    """
+    for ele in col:
+        dataframe.loc[:, ele] = dataframe.loc[:, ele].astype(dtype)
+
+    return dataframe
+
 
 def load_data(database_filepath):
     """The load_data function
@@ -81,6 +99,27 @@ def load_data(database_filepath):
     # drop nan, na
     df.dropna(inplace=True)
 
+
+    # Select categorical data, create strings
+    catt = df.iloc[:,2:].columns
+    df = tcolumn(df, catt, "str")
+
+    # create new column of multicategories sum
+    df['total'] = df.iloc[:,2:].sum(axis=1).astype('str')
+    mask = df['total'].value_counts()
+    mask2 = mask[mask==1].index.tolist()
+
+    # create ones column
+    df["ones"] = df["total"].apply(lambda x: "Noting" if x in mask2 else x )
+    mask2 = df['ones'].value_counts()
+
+    # drop total column and pop ones
+    df.drop(columns=['total'], inplace=True)
+    strata = df.pop("ones")
+
+    # convert to integers
+    df = tcolumn(df, catt, "int")
+
     # Select text and target
     messages_ = df.iloc[:, 0].values
 
@@ -91,7 +130,7 @@ def load_data(database_filepath):
     # get categories names
     category_names = name.columns.tolist()
 
-    return messages_, categories_, category_names
+    return messages_, categories_, category_names, strata
 
 
 def tokenize(text):
@@ -213,9 +252,9 @@ def main():
         print(
             "Loading data...\n    DATABASE: {}".format(database_filepath)
         )
-        X, Y, category_names = load_data(database_filepath)
+        X, Y, category_names, strata = load_data(database_filepath)
         X_train, X_test, Y_train, Y_test = train_test_split(
-            X, Y, test_size=0.2
+            X, Y, test_size=0.2, stratify=strata
         )
 
         print("Building model...")
