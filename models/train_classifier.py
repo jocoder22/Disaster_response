@@ -146,8 +146,6 @@ def tokenize(text):
 
     """
 
-    
-def tokenize(text):
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
     wordporter = SnowballStemmer("english")
